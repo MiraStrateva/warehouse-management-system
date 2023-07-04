@@ -2,18 +2,22 @@ import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class Product {
-  @PrimaryGeneratedColumn()
-  id: number;
+    constructor(partial?: Partial<Product>) {
+        Object.assign(this, partial);
+    }
 
-  @Column()
-  name: string;
+    @PrimaryGeneratedColumn()
+    id: number;
 
-  @Column()
-  description: string;
+    @Column()
+    name: string;
 
-  @Column()
-  size: number;
+    @Column({ nullable: true })
+    description?: string;
 
-  @Column()
-  hazardous: boolean;
+    @Column()
+    size: number;
+
+    @Column()
+    hazardous: boolean;
 }
