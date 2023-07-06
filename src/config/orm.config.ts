@@ -1,6 +1,8 @@
 import { registerAs } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { Product } from '../products/product.entity';
+import { ProductEntity } from '../products/product.entity';
+import { WarehouseEntity } from '../warehouses/warehouse.entity';
+import { InventoryMovementsEntity } from '../inventory-movements/inventory-movement.entity';
 
 export default registerAs(
   'orm.config',
@@ -11,7 +13,7 @@ export default registerAs(
     username: 'postgres',
     password: 'example',
     database: 'warehouse-management',
-    entities: [Product],
+    entities: [ProductEntity, WarehouseEntity, InventoryMovementsEntity],
     synchronize: true,
     dropSchema: false,
   })

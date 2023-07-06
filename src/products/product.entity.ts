@@ -1,8 +1,9 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { InventoryMovementsEntity } from '../inventory-movements/inventory-movement.entity';
 
-@Entity()
-export class Product {
-    constructor(partial?: Partial<Product>) {
+@Entity({ name: 'product' })
+export class ProductEntity {
+    constructor(partial?: Partial<ProductEntity>) {
         Object.assign(this, partial);
     }
 
@@ -18,6 +19,12 @@ export class Product {
     @Column()
     size: number;
 
-    @Column()
+    @Column({default: false})
     hazardous: boolean;
+
+    @Column({default: false})
+    deleted: boolean;
+
+    @OneToMany(() => InventoryMovementsEntity, (inventoryMovements) => inventoryMovements.product)
+    inventoryMovements: InventoryMovementsEntity[]
 }
