@@ -1,4 +1,4 @@
-import { Field, Float, InputType, OmitType, PartialType } from '@nestjs/graphql';
+import { Field, Int, InputType, OmitType, PartialType } from '@nestjs/graphql';
 import { IsNotEmpty, Length, Max, MaxLength, MinLength } from 'class-validator';
 
 @InputType()
@@ -17,7 +17,7 @@ export class ProductCreateInput {
     })
     description?: string;
 
-    @Field(() => Float, {
+    @Field(() => Int, {
         nullable: false,
         description: "User's size to the product",
     })

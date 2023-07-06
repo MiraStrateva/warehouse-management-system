@@ -7,6 +7,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductModule } from './products/product.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { WarehouseModule } from './warehouses/warehouse.module';
+import { InventoryMovementModule } from './inventory-movements/inventory-movement.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -23,7 +25,9 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
     autoSchemaFile: true,
     playground: true,
   }),
-  ProductModule
+  ProductModule,
+  WarehouseModule,
+  InventoryMovementModule
   ],
   controllers: [AppController],
   providers: [AppService],
