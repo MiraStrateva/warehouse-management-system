@@ -5,6 +5,10 @@ import { WarehouseEntity } from '../warehouses/warehouse.entity';
 
 @Entity({ name: 'inventory_movements' })
 export class InventoryMovementsEntity {
+    constructor(partial?: Partial<InventoryMovementsEntity>) {
+        Object.assign(this, partial);
+    }
+
     @PrimaryGeneratedColumn()
     id: number;
 

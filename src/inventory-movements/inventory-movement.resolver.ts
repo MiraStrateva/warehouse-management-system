@@ -1,7 +1,8 @@
-import { Resolver, Query, Args } from '@nestjs/graphql';
+import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { Inventory, InventoryMovements, InventoryMovementsHistory, InventoryStock, ProductAvailability } from "./models/inventory-movements.types";
 import { Logger } from "@nestjs/common";
 import { InventoryMovementService } from './inventory-movement.service';
+import { ImportInput } from './models/import.input';
 
 @Resolver(() => InventoryMovements)
 export class InvnentoryMovementResolver{
@@ -19,22 +20,42 @@ export class InvnentoryMovementResolver{
 
     @Query(() => [InventoryMovementsHistory])    
     public async inventoryMovementsHistory(
-        @Args('date', { type: () => Date })
-        date: Date,
+        @Args('dateFrom', { type: () => Date, nullable: true })
+        dateFrom: Date,
+        @Args('dateTo', { type: () => Date, nullable: true })
+        dateTo: Date,
         @Args('warehouseId', { type: () => Number, nullable: true })
-        warehouseId?: Number
+        warehouseId?: number
     ): Promise<InventoryMovementsHistory[]>{
-        return await this.inventoryMovementService.getHistoryReport(date, warehouseId);
+        const dateFromParsed = dateFrom ? new Date(dateFrom) : new Date(0);
+        const dateToParsed = dateTo ? new Date(dateTo) : new Date();
+
+        this.logger.debug(`dateFrom: ${dateFromParsed}, dateTo: ${dateToParsed}, warehouseId: ${warehouseId}`);
+
+        return await this.inventoryMovementService.getHistoryReport(dateFromParsed, dateToParsed, warehouseId);
+    }
+
+    @Mutation(() => InventoryMovements, { name: 'import' })
+    public async import(
+        @Args('input', {type: () => ImportInput}
+        ) input: ImportInput
+        ): Promise<InventoryMovements>{
+        
+        return await this.inventoryMovementService.import(input);
     }
 
     // TODO: This is not working, use logic when importing products
     @Query(() => Inventory)
     public async inventory(
+        @Args('date', { type: () => Date, nullable: true })
+        date: Date,
         @Args('warehouseId', { type: () => Number })
         warehouseId: number
-    ): Promise<InventoryStock[]>{
+    ): Promise<Inventory[]>{
+        const dateParsed = date ? new Date(date) : new Date();
+
         const inventoryStock = await this.inventoryMovementService.getWarehouseInventory(
-            warehouseId);
+            dateParsed, warehouseId);
 
         this.logger.debug(inventoryStock);
 
@@ -72,14 +93,17 @@ export class InvnentoryMovementResolver{
     // TODO: To be used when exporting products
     @Query(() => Number)
     public async productAvailability(
+        @Args('date', { type: () => Date, nullable: true })
+        date: Date,
         @Args('productId', { type: () => Number })
         productId: number,
         @Args('warehouseId', { type: () => Number })
-        warehouseId: number)
-        : Promise<number>{
+        warehouseId: number
+        ): Promise<number>{
         
+        const dateParsed = date ? new Date(date) : new Date();
         const productAvailability = await this.inventoryMovementService.getProductAvailability(
-            productId, warehouseId);
+            dateParsed, productId, warehouseId);
         
         let sum = 0;
         productAvailability.forEach(number => {
