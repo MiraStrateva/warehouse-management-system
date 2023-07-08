@@ -1,13 +1,14 @@
 import { InjectRepository } from "@nestjs/typeorm";
 import { ProductEntity } from "./product.entity";
 import { Repository } from "typeorm";
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { PaginateOptions, paginate } from "./../pagination/paginator";
 import { PaginatedProducts } from "./models/product.types";
 import { ProductCreateInput, ProductEditInput } from "./models/product.inputs";
 
 @Injectable()
 export class ProductService {
+    private readonly logger = new Logger(ProductService.name);
     constructor(
         @InjectRepository(ProductEntity)
         private readonly productsRepository: Repository<ProductEntity>
@@ -23,6 +24,7 @@ export class ProductService {
     }
 
     async findOne(id: number): Promise<ProductEntity | undefined> {
+        this.logger.debug(`findOne: ${id}`);
         const product = await this.productsRepository.findOneBy({id: id, deleted: false});
         if (!product) {
             throw new NotFoundException();

@@ -1,8 +1,9 @@
 import { InjectRepository } from "@nestjs/typeorm";
 import { InventoryMovementsEntity } from "./inventory-movement.entity";
-import { MoreThanOrEqual, Repository, getConnection } from "typeorm";
+import { LessThanOrEqual, Repository } from "typeorm";
 import { Injectable, Logger } from "@nestjs/common";
-import { InventoryMovements, InventoryMovementsHistory, InventoryStock, ProductAvailability } from "./models/inventory-movements.types";
+import { Direction, InventoryMovements, InventoryMovementsHistory, InventoryStock, ProductAvailability } from "./models/inventory-movements.types";
+import { ImportExportInput } from "./models/import-export.input";
 
 @Injectable()
 export class InventoryMovementService {
@@ -18,18 +19,39 @@ export class InventoryMovementService {
             .find({ relations: ['product', 'warehouse']});
     }
 
+    async import(input: ImportExportInput): Promise<InventoryMovements> {
+        return await this.inventoryMovementsRepository
+            .save(new InventoryMovementsEntity({
+                ...input,
+                direction: Direction.Import,
+            }));
+    }
+
+    async export(input: ImportExportInput): Promise<InventoryMovements> {
+        return await this.inventoryMovementsRepository
+            .save(new InventoryMovementsEntity({
+                ...input,
+                direction: Direction.Export,
+            }));
+    }
+
     async getHistoryReport(
-        date: Date, 
-        warehouseId?: Number
+        fromDate: Date,
+        toDate: Date, 
+        warehouseId?: number
         ): Promise<InventoryMovementsHistory[]> {
-        
-        
-        const history = await this.inventoryMovementsRepository
-            .find({ 
-                select: ["date", "direction", "product", "amount", "warehouse"],
-                relations: ['product', 'warehouse'],
-                where: [{ date: MoreThanOrEqual(date) }],
-                order: { date: "ASC" }});
+
+        this.logger.debug(`History report from: ${fromDate} to: ${toDate}, warehouse: ${warehouseId}`);
+
+        const query = this.inventoryMovementsRepository
+            .createQueryBuilder("inventoryMovements")
+            .innerJoinAndSelect("inventoryMovements.product", "product")
+            .innerJoinAndSelect("inventoryMovements.warehouse", "warehouse")
+            .where("inventoryMovements.date >= :fromDate", { fromDate: fromDate })
+            .andWhere("inventoryMovements.date <= :toDate", { toDate: toDate })
+            .andWhere(warehouseId ? "inventoryMovements.warehouseId = :warehouseId" : "1=1", { warehouseId: warehouseId })
+            .orderBy("inventoryMovements.date", "ASC");
+        const history = await query.getMany();
 
         this.logger.debug(history);
 
@@ -50,7 +72,7 @@ export class InventoryMovementService {
         hazardous: boolean, warehouseId: number
         ): Promise<boolean> {
 
-        this.logger.debug(`Checking for hazardous in warehouse: {warehouseId}, hazardous: {hazardous}`);
+        this.logger.debug(`Checking for hazardous in warehouse: ${warehouseId}, hazardous: ${hazardous}`);
         
         const lastWarehouseInventory = await this.inventoryMovementsRepository.findOne({
             select: ["product"],
@@ -63,14 +85,16 @@ export class InventoryMovementService {
     }
 
     async getWarehouseInventory(
+        date: Date,
         warehouseId: number
         ): Promise<InventoryStock[]> {
 
-        this.logger.debug(`Checking for inventory stock in warehouse: {warehouseId}, date: {date}`);
+        this.logger.debug(`Checking for inventory stock in warehouse: ${warehouseId}, date: ${date}`);
+
         const warehouseInventory = await this.inventoryMovementsRepository.find({
             select: ["warehouse", "product", "amount", "direction"],
             relations: ['warehouse', 'product'],
-            where: [{ warehouseId: warehouseId}]
+            where: [{ date: LessThanOrEqual(date), warehouseId: warehouseId}]
         });      
         
         this.logger.debug(warehouseInventory);
@@ -84,19 +108,21 @@ export class InventoryMovementService {
     }
 
     async getProductAvailability(
-        productId: number, warehouseId: number
+        date: Date,
+        productId: number, 
+        warehouseId: number
         ): Promise<ProductAvailability[]> {
 
         const warehouseInventory = await this.inventoryMovementsRepository.find({
             select: ["product", "amount", "direction"],
             relations: ['product'],	
-            where: [{ warehouseId: warehouseId, productId: productId}]});
+            where: [{ date: LessThanOrEqual(date), warehouseId: warehouseId, productId: productId}]});
         this.logger.debug(warehouseInventory);          
         
         return warehouseInventory.map((movement) => {
             return {
             availability: movement.direction === 'import' 
-                        ? movement.amount*movement.product.size 
-                        : -movement.amount*movement.product.size}});        
+                        ? movement.amount 
+                        : -movement.amount}});        
     }
 }
