@@ -3,7 +3,7 @@ import { InventoryMovementsEntity } from "./inventory-movement.entity";
 import { LessThanOrEqual, Repository } from "typeorm";
 import { Injectable, Logger } from "@nestjs/common";
 import { Direction, InventoryMovements, InventoryMovementsHistory, InventoryStock, ProductAvailability } from "./models/inventory-movements.types";
-import { ImportInput } from "./models/import.input";
+import { ImportExportInput } from "./models/import-export.input";
 
 @Injectable()
 export class InventoryMovementService {
@@ -19,11 +19,19 @@ export class InventoryMovementService {
             .find({ relations: ['product', 'warehouse']});
     }
 
-    async import(input: ImportInput): Promise<InventoryMovements> {
+    async import(input: ImportExportInput): Promise<InventoryMovements> {
         return await this.inventoryMovementsRepository
             .save(new InventoryMovementsEntity({
                 ...input,
                 direction: Direction.Import,
+            }));
+    }
+
+    async export(input: ImportExportInput): Promise<InventoryMovements> {
+        return await this.inventoryMovementsRepository
+            .save(new InventoryMovementsEntity({
+                ...input,
+                direction: Direction.Export,
             }));
     }
 

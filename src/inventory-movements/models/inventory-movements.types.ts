@@ -64,6 +64,9 @@ export class InventoryStock{
 
 @ObjectType()
 export class Inventory{
+    constructor(partial?: Partial<Inventory>) {
+        Object.assign(this, partial);
+    }
     @Field()
     capacity: number;
 

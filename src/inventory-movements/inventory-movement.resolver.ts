@@ -1,8 +1,10 @@
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
-import { Inventory, InventoryMovements, InventoryMovementsHistory, InventoryStock, ProductAvailability } from "./models/inventory-movements.types";
-import { Logger } from "@nestjs/common";
+import { Inventory, InventoryMovements, InventoryMovementsHistory } from "./models/inventory-movements.types";
+import { BadRequestException, Inject, Logger } from "@nestjs/common";
 import { InventoryMovementService } from './inventory-movement.service';
-import { ImportInput } from './models/import.input';
+import { ImportExportInput } from './models/import-export.input';
+import { ProductService } from '../products/product.service';
+import { WarehouseService } from '../warehouses/warehouse.service';
 
 @Resolver(() => InventoryMovements)
 export class InvnentoryMovementResolver{
@@ -10,7 +12,9 @@ export class InvnentoryMovementResolver{
     private readonly logger = new Logger(InvnentoryMovementResolver.name);
 
     constructor (
-        private readonly inventoryMovementService: InventoryMovementService
+        private readonly inventoryMovementService: InventoryMovementService,
+        private readonly productService: ProductService,
+        private readonly warehouseService: WarehouseService
     ) {}
 
     @Query(() => [InventoryMovements])    
@@ -37,15 +41,68 @@ export class InvnentoryMovementResolver{
 
     @Mutation(() => InventoryMovements, { name: 'import' })
     public async import(
-        @Args('input', {type: () => ImportInput}
-        ) input: ImportInput
+        @Args('input', {type: () => ImportExportInput}
+        ) input: ImportExportInput
         ): Promise<InventoryMovements>{
         
+        // Check if import is possible
+        // 1. hazardous products are not kept in the same warehouse as non-hazardous products
+        var product = await this.productService.findOne(input.productId);
+        if (!await this.inventoryMovementService
+                .checkForImportPossibility(product.hazardous, input.warehouseId)){
+            throw new BadRequestException(
+                "Hazardous products are not kept in the same warehouse as non-hazardous products");
+        }
+
+        // 2. warehouse capacity is not exceeded
+        var warehouseInventory = await this.inventoryMovementService
+            .getWarehouseInventory(input.date, input.warehouseId);
+
+        this.logger.debug(warehouseInventory);
+
+        if (warehouseInventory.length > 0){
+            let currentWarehouseStock = 0;
+            warehouseInventory.forEach(product => {
+                currentWarehouseStock += product.currentStock;
+            });
+
+            this.logger.debug(currentWarehouseStock);
+
+            if (input.amount > warehouseInventory[0].capacity -currentWarehouseStock){
+                throw new BadRequestException(
+                    "There is not enough space in the warehouse to import this amount of products");
+            }
+        }
+
         return await this.inventoryMovementService.import(input);
     }
 
-    // TODO: This is not working, use logic when importing products
-    @Query(() => Inventory)
+    @Mutation(() => InventoryMovements, { name: 'export' })
+    public async export(
+        @Args('input', {type: () => ImportExportInput}) 
+        input: ImportExportInput
+    ): Promise<InventoryMovements>{
+
+        // Check if export is possible
+        // 1. warehouse has enough stock
+        var productAvailability = await this.inventoryMovementService
+            .getProductAvailability(input.date, input.productId, input.warehouseId);
+
+        this.logger.debug(productAvailability);
+        let sum = 0;
+        productAvailability.forEach(number => {
+            sum += number.availability;
+        });
+        this.logger.debug(sum);
+        if (input.amount > sum){
+            throw new BadRequestException(
+                "There is not enough stock in the warehouse to export this amount of products");
+        }
+
+        return await this.inventoryMovementService.export(input);
+    }
+
+    @Query(() => [Inventory])
     public async inventory(
         @Args('date', { type: () => Date, nullable: true })
         date: Date,
@@ -60,7 +117,11 @@ export class InvnentoryMovementResolver{
         this.logger.debug(inventoryStock);
 
         if (inventoryStock.length === 0){
-            return [];
+            var warehouse = await this.warehouseService.findOne(warehouseId);
+            return [new Inventory({
+                capacity: warehouse.capacity, 
+                currentStock: 0, 
+                remainingCapacity: warehouse.capacity})];
         }
 
         let currentWarehouseStock = 0;
@@ -70,46 +131,9 @@ export class InvnentoryMovementResolver{
 
         this.logger.debug(currentWarehouseStock);
 
-        let inventory = new Inventory();
-        inventory.capacity = inventoryStock[0].capacity;
-        inventory.currentStock = currentWarehouseStock;
-        inventory.remainingCapacity = inventory.capacity - inventory.currentStock;
-
-        this.logger.debug([inventory]);
-
-        return [inventory];
+        return [new Inventory({
+                capacity: inventoryStock[0].capacity,
+                currentStock: currentWarehouseStock,
+                remainingCapacity: inventoryStock[0].capacity - currentWarehouseStock})];
     }
-
-    // TODO: To be used when importing products
-    @Query(() => Boolean)
-    public async importPossibility(
-        @Args('hazardous', { type: () => Boolean })
-        hazardous: boolean,
-        @Args('warehouseId', { type: () => Number })
-        warehouseId: number): Promise<boolean>{
-        return await this.inventoryMovementService.checkForImportPossibility(hazardous, warehouseId);
-    }
-
-    // TODO: To be used when exporting products
-    @Query(() => Number)
-    public async productAvailability(
-        @Args('date', { type: () => Date, nullable: true })
-        date: Date,
-        @Args('productId', { type: () => Number })
-        productId: number,
-        @Args('warehouseId', { type: () => Number })
-        warehouseId: number
-        ): Promise<number>{
-        
-        const dateParsed = date ? new Date(date) : new Date();
-        const productAvailability = await this.inventoryMovementService.getProductAvailability(
-            dateParsed, productId, warehouseId);
-        
-        let sum = 0;
-        productAvailability.forEach(number => {
-            sum += number.availability;
-        });
-        return sum;
-    }
-
 }

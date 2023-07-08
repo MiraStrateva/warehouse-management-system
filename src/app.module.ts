@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import ormConfig from './config/orm.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -29,7 +27,5 @@ import { InventoryMovementModule } from './inventory-movements/inventory-movemen
   WarehouseModule,
   InventoryMovementModule
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

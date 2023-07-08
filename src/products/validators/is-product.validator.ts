@@ -1,6 +1,8 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { registerDecorator, ValidationOptions, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
-import { ProductService } from '../product.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ProductEntity } from '../product.entity';
+import { Repository } from 'typeorm';
 
 @ValidatorConstraint({ name: 'isProduct', async: true })
 @Injectable()
@@ -8,16 +10,15 @@ export class IsProductValidator implements ValidatorConstraintInterface {
   private readonly logger = new Logger(IsProductValidator.name);
 
   constructor(
-    @Inject(ProductService)
-    private readonly productService: ProductService,
+    @InjectRepository(ProductEntity)
+    private readonly productsRepository: Repository<ProductEntity>
   ) {}
 
-  async validate(id: any, validationArguments: ValidationArguments): Promise<boolean> {
+  async validate(id: number): Promise<boolean> {
     
     this.logger.debug(`Validating product with ID: ${id}`);
 
-    const product = await this.productService
-              .findOne(id);
+    const product = await this.productsRepository.findOneBy({id: id, deleted: false});
 
     this.logger.debug(product);
     return !!product;
