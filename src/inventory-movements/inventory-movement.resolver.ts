@@ -55,7 +55,7 @@ export class InvnentoryMovementResolver{
         var product = await this.productService.findOne(input.productId);
         if (!await this.inventoryMovementService
                 .checkForImportPossibility(product.hazardous, input.warehouseId)){
-            throw new BadRequestException(
+            throw new Error(
                 "Hazardous products are not kept in the same warehouse as non-hazardous products");
         }
 
@@ -102,7 +102,7 @@ export class InvnentoryMovementResolver{
         });
         this.logger.debug(sum);
         if (input.amount > sum){
-            throw new BadRequestException(
+            throw new Error(
                 "There is not enough stock in the warehouse to export this amount of products");
         }
 

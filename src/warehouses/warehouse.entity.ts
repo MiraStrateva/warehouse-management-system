@@ -24,12 +24,4 @@ export class WarehouseEntity {
 
     @OneToMany(() => InventoryMovementsEntity, (inventoryMovements) => inventoryMovements.warehouse)
     inventoryMovements: InventoryMovementsEntity[]
-
-    importedAmount?: number;
-
-    exportedAmount?: number;
-
-    currentStock?: number;
-
-    remainingCapacity: number;
 }
