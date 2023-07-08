@@ -1,6 +1,7 @@
 import { Field, ObjectType, registerEnumType } from "@nestjs/graphql";
 import { Product } from "../../products/models/product.types";
 import { Warehouse } from "../../warehouses/models/warehouse.types";
+import { User } from "../../auth/models/user.types";
 
 export enum Direction {
     Import = 'import',
@@ -26,6 +27,9 @@ export class InventoryMovements{
 
     @Field(() => Product, { nullable: false })
     product: Product;
+
+    @Field(() => User, { nullable: false })
+    user: User;
 }
 
 @ObjectType()
@@ -50,6 +54,9 @@ export class InventoryMovementsHistory{
 
     @Field()
     total: number;
+
+    @Field()
+    userName: string;
 }
 
 @ObjectType()
