@@ -1,6 +1,6 @@
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
-import { Inventory, InventoryMovements, InventoryMovementsHistory } from "./models/inventory-movements.types";
-import { BadRequestException, Inject, Logger } from "@nestjs/common";
+import { Inventory, InventoryMovements, InventoryMovementsHistory } from './models/inventory-movements.types';
+import { BadRequestException, Logger } from "@nestjs/common";
 import { InventoryMovementService } from './inventory-movement.service';
 import { ImportExportInput } from './models/import-export.input';
 import { ProductService } from '../products/product.service';
@@ -50,7 +50,7 @@ export class InvnentoryMovementResolver{
         var product = await this.productService.findOne(input.productId);
         if (!await this.inventoryMovementService
                 .checkForImportPossibility(product.hazardous, input.warehouseId)){
-            throw new BadRequestException(
+            throw new Error(
                 "Hazardous products are not kept in the same warehouse as non-hazardous products");
         }
 
@@ -69,7 +69,7 @@ export class InvnentoryMovementResolver{
             this.logger.debug(currentWarehouseStock);
 
             if (input.amount > warehouseInventory[0].capacity -currentWarehouseStock){
-                throw new BadRequestException(
+                throw new Error(
                     "There is not enough space in the warehouse to import this amount of products");
             }
         }
@@ -95,7 +95,7 @@ export class InvnentoryMovementResolver{
         });
         this.logger.debug(sum);
         if (input.amount > sum){
-            throw new BadRequestException(
+            throw new Error(
                 "There is not enough stock in the warehouse to export this amount of products");
         }
 

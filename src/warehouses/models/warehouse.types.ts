@@ -3,6 +3,10 @@ import { Paginated } from  "../../pagination/paginator"
 
 @ObjectType()
 export class Warehouse {    
+    constructor(partial?: Partial<Warehouse>) {
+        Object.assign(this, partial);
+    }
+
     @Field(() => Int)
     id: number;
 
@@ -24,6 +28,9 @@ export class Warehouse {
     })
     capacity: number;
 }
+
+@ObjectType()
+export class PaginatedWarehouses extends Paginated<Warehouse>(Warehouse) {}
 
 @ObjectType()
 export class WarehouseInventory {    
@@ -50,18 +57,6 @@ export class WarehouseInventory {
 
     @Field(() => Float, {
         nullable: false,
-        description: "Warehouse's imported amount",
-    })
-    importedAmount: number;
-
-    @Field(() => Float, {
-        nullable: false,
-        description: "Warehouse's exported amount",
-    })
-    exportedAmount: number;
-
-    @Field(() => Float, {
-        nullable: false,
         description: "Warehouse's current stock amount",
     })
     currentStock: number;
@@ -72,6 +67,3 @@ export class WarehouseInventory {
     })
     remainingCapacity: number;
 }
-
-@ObjectType()
-export class PaginatedWarehouses extends Paginated<Warehouse>(Warehouse) {}

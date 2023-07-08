@@ -7,7 +7,7 @@ import { IsWarehouseValidator } from "./validators/is-warehouse.validator";
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([WarehouseEntity]),
+        TypeOrmModule.forFeature([WarehouseEntity])
     ],
     providers: [WarehouseService, WarehouseResolver, IsWarehouseValidator],
 })
