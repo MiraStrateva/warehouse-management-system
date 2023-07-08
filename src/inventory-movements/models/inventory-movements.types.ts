@@ -1,7 +1,6 @@
 import { Field, ObjectType, registerEnumType } from "@nestjs/graphql";
 import { Product } from "../../products/models/product.types";
 import { Warehouse } from "../../warehouses/models/warehouse.types";
-import { number } from "yargs";
 
 export enum Direction {
     Import = 'import',

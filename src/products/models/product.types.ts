@@ -3,6 +3,10 @@ import { Paginated } from  "../../pagination/paginator"
 
 @ObjectType()
 export class Product {    
+    constructor(partial?: Partial<Product>) {
+        Object.assign(this, partial);
+    }
+
     @Field(() => Int)
     id: number;
 
