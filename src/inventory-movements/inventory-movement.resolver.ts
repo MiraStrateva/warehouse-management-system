@@ -1,10 +1,13 @@
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { Inventory, InventoryMovements, InventoryMovementsHistory } from "./models/inventory-movements.types";
-import { BadRequestException, Inject, Logger } from "@nestjs/common";
+import { BadRequestException, Logger, UseGuards } from "@nestjs/common";
 import { InventoryMovementService } from './inventory-movement.service';
 import { ImportExportInput } from './models/import-export.input';
 import { ProductService } from '../products/product.service';
 import { WarehouseService } from '../warehouses/warehouse.service';
+import { AuthGuardJwtGql } from '../auth/auth-guard-jwt.gql';
+import { CurrentUser } from '../auth/current-user.decorator';
+import { UserEntity } from 'src/auth/user.entity';
 
 @Resolver(() => InventoryMovements)
 export class InvnentoryMovementResolver{
@@ -40,9 +43,11 @@ export class InvnentoryMovementResolver{
     }
 
     @Mutation(() => InventoryMovements, { name: 'import' })
+    @UseGuards(AuthGuardJwtGql)
     public async import(
-        @Args('input', {type: () => ImportExportInput}
-        ) input: ImportExportInput
+        @Args('input', {type: () => ImportExportInput}) 
+        input: ImportExportInput,
+        @CurrentUser() user: UserEntity
         ): Promise<InventoryMovements>{
         
         // Check if import is possible
@@ -68,21 +73,23 @@ export class InvnentoryMovementResolver{
 
             this.logger.debug(currentWarehouseStock);
 
-            if (input.amount > warehouseInventory[0].capacity -currentWarehouseStock){
+            if (input.amount > (warehouseInventory[0].capacity - currentWarehouseStock)){
                 throw new BadRequestException(
                     "There is not enough space in the warehouse to import this amount of products");
             }
         }
 
-        return await this.inventoryMovementService.import(input);
+        return await this.inventoryMovementService.import(input, user);
     }
 
     @Mutation(() => InventoryMovements, { name: 'export' })
+    @UseGuards(AuthGuardJwtGql)
     public async export(
         @Args('input', {type: () => ImportExportInput}) 
-        input: ImportExportInput
+        input: ImportExportInput,
+        @CurrentUser() user: UserEntity
     ): Promise<InventoryMovements>{
-
+        
         // Check if export is possible
         // 1. warehouse has enough stock
         var productAvailability = await this.inventoryMovementService
@@ -99,7 +106,7 @@ export class InvnentoryMovementResolver{
                 "There is not enough stock in the warehouse to export this amount of products");
         }
 
-        return await this.inventoryMovementService.export(input);
+        return await this.inventoryMovementService.export(input, user);
     }
 
     @Query(() => [Inventory])

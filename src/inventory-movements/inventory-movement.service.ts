@@ -4,6 +4,7 @@ import { LessThanOrEqual, Repository } from "typeorm";
 import { Injectable, Logger } from "@nestjs/common";
 import { Direction, InventoryMovements, InventoryMovementsHistory, InventoryStock, ProductAvailability } from "./models/inventory-movements.types";
 import { ImportExportInput } from "./models/import-export.input";
+import { UserEntity } from "src/auth/user.entity";
 
 @Injectable()
 export class InventoryMovementService {
@@ -19,18 +20,21 @@ export class InventoryMovementService {
             .find({ relations: ['product', 'warehouse']});
     }
 
-    async import(input: ImportExportInput): Promise<InventoryMovements> {
+    async import(input: ImportExportInput, user: UserEntity): Promise<InventoryMovements> {
+        this.logger.debug([user]);
         return await this.inventoryMovementsRepository
             .save(new InventoryMovementsEntity({
                 ...input,
+                user: user,
                 direction: Direction.Import,
             }));
     }
 
-    async export(input: ImportExportInput): Promise<InventoryMovements> {
+    async export(input: ImportExportInput, user: UserEntity): Promise<InventoryMovements> {
         return await this.inventoryMovementsRepository
             .save(new InventoryMovementsEntity({
                 ...input,
+                user: user,
                 direction: Direction.Export,
             }));
     }
@@ -47,6 +51,7 @@ export class InventoryMovementService {
             .createQueryBuilder("inventoryMovements")
             .innerJoinAndSelect("inventoryMovements.product", "product")
             .innerJoinAndSelect("inventoryMovements.warehouse", "warehouse")
+            .innerJoinAndSelect("inventoryMovements.user", "user")
             .where("inventoryMovements.date >= :fromDate", { fromDate: fromDate })
             .andWhere("inventoryMovements.date <= :toDate", { toDate: toDate })
             .andWhere(warehouseId ? "inventoryMovements.warehouseId = :warehouseId" : "1=1", { warehouseId: warehouseId })
@@ -65,7 +70,8 @@ export class InventoryMovementService {
                 warehouseName: movement.warehouse.name,
                 total: movement.direction === 'import' ?
                      movement.amount*movement.product.size :
-                     -movement.amount*movement.product.size}});
+                     -movement.amount*movement.product.size,
+                userName: movement.user.username}});
     }
 
     async checkForImportPossibility(

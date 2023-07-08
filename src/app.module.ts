@@ -7,6 +7,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { WarehouseModule } from './warehouses/warehouse.module';
 import { InventoryMovementModule } from './inventory-movements/inventory-movement.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -23,6 +24,7 @@ import { InventoryMovementModule } from './inventory-movements/inventory-movemen
     autoSchemaFile: true,
     playground: true,
   }),
+  AuthModule,
   ProductModule,
   WarehouseModule,
   InventoryMovementModule
