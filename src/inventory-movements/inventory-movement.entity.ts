@@ -16,7 +16,7 @@ export class InventoryMovementsEntity {
     @Column({
         type: 'enum',
         enum: Direction,
-        default: Direction.Import
+        default: Direction.IMPORT
     })
     direction: Direction;
 

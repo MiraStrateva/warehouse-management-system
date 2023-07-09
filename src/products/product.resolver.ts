@@ -15,7 +15,7 @@ export class ProductResolver{
         private readonly productService: ProductService
     ) {}
 
-    @Query(() => PaginatedProducts, { name: 'products', nullable: true })    
+    @Query(() => PaginatedProducts, { name: 'productsList', nullable: true })    
     public async products(
         @Args('input', { type: () => PaginateOptionsInput })
         input: PaginateOptionsInput
@@ -23,7 +23,7 @@ export class ProductResolver{
         return await this.productService.findAll(input);
     }
 
-    @Query(() => Product)       
+    @Query(() => Product, { name: 'productInfo', nullable: true })       
     public async product(
         @Args('id', {type: () => Int})
         id: number

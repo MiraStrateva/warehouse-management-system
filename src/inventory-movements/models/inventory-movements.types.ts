@@ -5,8 +5,8 @@ import { User } from "../../auth/models/user.types";
 import { Paginated } from '../../pagination/paginator';
 
 export enum Direction {
-    Import = 'import',
-    Export = 'export'
+    IMPORT = 'import',
+    EXPORT = 'export'
 }
 
 @ObjectType()
@@ -37,7 +37,7 @@ export class InventoryMovements{
 export class PaginatedInventoryMovements extends Paginated<InventoryMovements>(InventoryMovements) {}
 
 @ObjectType()
-export class InventoryMovementsHistory{
+export class InventoryMovementsHistoryReport{
     @Field()
     date: Date;
 

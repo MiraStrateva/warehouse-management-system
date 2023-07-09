@@ -1,35 +1,42 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Warehouse Management System
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This project is a small stock management application built as part of an interview task. The application provides a GraphQL API powered by Apollo Server, which interacts with a PostgreSQL database. The API includes various queries to manage warehouses, products, and stock operations. Some of the calculation operations are performed by calling an external REST API ([math.js web service](https://api.mathjs.org/)).
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Technologies Used
+- TypeScript
+- NestJS
+- GraphQL
+- Apollo Server
+- PostgreSQL
 
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Project Features
+- List of Warehouses: Retrieve a detailed list of warehouses including name, description and capacity of a warehouse.
+- List of Products: Retrieve a detailed list of products including name, description and size of a product.
+- List of Inventory Movemebts Operations: Retrieve a detailed list of stock operations, including date, import/export, amount, warehouse, product and user.
+- Pagination: The API supports pagination for all list queries.
+- Product Management: Manage the product inventory by adding, editing, and removing existing products. Products can be marked as hazardous or non-hazardous. 
+- Warehouse Management: Manage the warehouse inventory by adding, editing, and removing existing warehouses. 
+- Stock Operations: Perform import and export operations to move products into and out of warehouses. Some rules apply to the operations:
+    - Imports/Exports can be in the future or the past.
+    - The amount of the operation must be a positive number and cannot be zero.
+    - The amount of the import operation cannot exceed the free space of the warehouse.
+    - The amount of the export operation cannot exceed the available stock of the product.
+    - Hazardous products cannot be stored in the same warehouse as non-hazardous products.
+- Current Stock: Obtain the current stock amount per warehouse and optionally can be requested to a specific date and the overall free stock space remaining.
+- Historic Operations: Retrieve a historical list of imports and exports based on specific period and/or warehouses.
+- User Management: Manage the users of the system by registering users.
+- Authorization: The API is protected by a JWT token. The token can be obtained by calling the login mutation. The token is valid for 1 hour. The token is required to perform import/export operations.
 
 ## Installation
 
 ```bash
 $ npm install
+```
+
+## Setup PostgreSQL and Adminer
+
+```bash
+$ npm docker-compose up
 ```
 
 ## Running the app
@@ -40,9 +47,6 @@ $ npm run start
 
 # watch mode
 $ npm run start:dev
-
-# production mode
-$ npm run start:prod
 ```
 
 ## Test
@@ -58,16 +62,7 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
-## Support
+## Authors
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+This Warehouse Management System project was implemented by Miroslava Strateva as part of an interview task.
+Feel free to reach out with any questions or feedback.
