@@ -9,13 +9,13 @@ export default registerAs(
   'orm.config',
   (): TypeOrmModuleOptions => ({
     type: 'postgres',
-    host: '127.0.0.1',
-    port: 5432,
-    username: 'postgres',
-    password: 'example',
-    database: 'warehouse-management',
+    host: process.env.DB_HOST || '127.0.0.1',
+    port: Number(process.env.DB_PORT) || 5432,
+    username: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || 'example',
+    database: process.env.DB_NAME || 'warehouse-management',
     entities: [ProductEntity, WarehouseEntity, InventoryMovementsEntity, UserEntity],
     synchronize: true,
-    dropSchema: false,
+    dropSchema: Boolean(process.env.DB_DROP_SCHEMA) || false,
   })
 );

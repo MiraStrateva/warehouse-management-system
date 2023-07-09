@@ -13,7 +13,7 @@ import { IsNotExistingUserValidator } from "./validators/is-not-existing-user.va
     imports: [TypeOrmModule.forFeature([UserEntity]),
         JwtModule.registerAsync({
             useFactory: () => ({
-                secret: 'secret123',
+                secret: process.env.AUTH_SECRET || 'secret123',
                 signOptions: { 
                     expiresIn: '60m' 
                 },
