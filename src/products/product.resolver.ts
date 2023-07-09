@@ -2,7 +2,7 @@ import { Logger } from "@nestjs/common";
 import { ProductService } from "./product.service";
 import { PaginatedProducts, Product } from './models/product.types';
 import { Args, Int, Mutation, Query, Resolver } from "@nestjs/graphql";
-import { PaginateOptionsInput } from "src/pagination/models/paginate-options.input";
+import { PaginateOptionsInput } from "../pagination/models/paginate-options.input";
 import { ProductCreateInput, ProductEditInput } from "./models/product.inputs";
 import { EntityWithId } from '../app.types';
 

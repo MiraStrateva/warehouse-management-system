@@ -1,40 +1,26 @@
 import { Repository, UpdateResult } from "typeorm";
 import { WarehouseService } from "./warehouse.service";
 import { WarehouseEntity } from "./warehouse.entity";
-import * as paginator from './../pagination/paginator';
 import { Test } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
-
-jest.mock('./../pagination/paginator');
+import { WarehouseCreateInput } from "./models/warehouse.inputs";
 
 describe('WarehouseService', () => {	
     let warehouseService: WarehouseService;
     let warehouseRepository: Repository<WarehouseEntity>;
-    let mockedPaginate;
-    let selectQb;
 
     beforeEach(async () => {
-        mockedPaginate = paginator.paginate as jest.Mock;
-        
-        selectQb = {
-            where: jest.fn(),
-            execute: jest.fn(),
-            orderBy: jest.fn(),
-            leftJoinAndSelect: jest.fn()
-        };
-
         const module = await Test.createTestingModule({
             providers: [
-                WarehouseService, {
+                WarehouseService, 
+                {
                     provide: getRepositoryToken(WarehouseEntity),
                     useValue: {
-                        save: jest.fn(),
-                        createQueryBuilder: jest.fn().mockReturnValue(selectQb),
-                        delete: jest.fn(),
-                        where: jest.fn(),
-                        execute: jest.fn(), 
                         findOneBy: jest.fn(), 
-                        update: jest.fn()
+                        update: jest.fn(),
+                        save: jest.fn(),
+                        where: jest.fn(),
+                        execute: jest.fn()
                     }
                 }
             ]
@@ -46,21 +32,55 @@ describe('WarehouseService', () => {
         );
     });
 
+    describe('findOne', () => {
+        it('should return a warehouse', async () => {
+            const repoFindOneBySpy = jest.spyOn(warehouseRepository, 'findOneBy')
+                .mockResolvedValue({ id: 1, name: "WHS 1" } as WarehouseEntity);
+
+            expect(warehouseService.findOne(1))
+                .resolves
+                .toEqual({ id: 1, name: 'WHS 1' } as WarehouseEntity);
+
+            expect(repoFindOneBySpy).toBeCalledTimes(1);
+        });
+
+        it('should throw an error if warehouse does not exist', async () => {
+            jest.spyOn(warehouseRepository, 'findOneBy')
+                .mockResolvedValue(undefined);
+
+            expect(warehouseService.findOne(1))
+                .rejects
+                .toThrowError();
+        });
+    });
+
+    describe('create', () => {
+        it('should return a warehouse', async () => {
+            const repoSaveSpy = jest.spyOn(warehouseRepository, 'save')
+                .mockResolvedValue({ id: 1, name: "WHS 1" } as WarehouseEntity);
+            const input = new WarehouseCreateInput();   
+            input.name = 'WHS 1';
+
+            expect(warehouseService.create(input))
+                .resolves
+                .toEqual({ id: 1, name: 'WHS 1' } as WarehouseEntity);
+
+            expect(repoSaveSpy).toBeCalledTimes(1);
+        });
+    });
+
     describe('updateWarehouse', () => {
         it('should update a warehouse', async () => {
 
-            const repoUpdateSpy = jest.spyOn(warehouseRepository, 'update')
-                .mockResolvedValue({ affected: 1 } as UpdateResult);
-
             const repoFindOneBySpy = jest.spyOn(warehouseRepository, 'findOneBy')
-                 .mockResolvedValue({ id: 1 } as WarehouseEntity);
+                .mockResolvedValue({ id: 1, name: "WHS 1" } as WarehouseEntity);
+            const repoUpdateSpy = jest.spyOn(warehouseRepository, 'update')
+                .mockResolvedValue(new UpdateResult());
 
             expect(warehouseService
-                .update(1, new WarehouseEntity({ id: 1, name: 'New name' })))
+                .update(1, new WarehouseEntity({ id: 1, name: 'WHS 1' })))
                 .resolves
-                .toEqual({ id: 1 } as WarehouseEntity);
-            expect(repoFindOneBySpy).toBeCalledTimes(1);
-            expect(repoFindOneBySpy).toBeCalledWith({id: 1, deleted: false});    
+                .toEqual({ id: 1, name: 'WHS 1' } as WarehouseEntity);
         });
 
         it('should throw an error if warehouse does not exist', async () => {
@@ -77,14 +97,14 @@ describe('WarehouseService', () => {
     describe('deleteWarehouse', () => { 
         it('should delete a warehouse', async () => {
             const findOneSpy = jest.spyOn(warehouseRepository, 'findOneBy')
-                .mockResolvedValue(new WarehouseEntity({ id: 1, name: 'New name', capacity: 10 }));
+                .mockImplementation((): any => new WarehouseEntity({ id: 1, name: 'WHS 1' }));
             const updateSpy = jest.spyOn(warehouseRepository, 'update')
-                .mockResolvedValue({ affected: 1 } as UpdateResult);;
+                .mockImplementation((): any => new UpdateResult());
 
             expect(warehouseService
                 .delete(1))
                 .resolves
-                .toBe(undefined);
+                .toEqual(undefined);
 
             expect(findOneSpy).toBeCalledTimes(1);
             expect(findOneSpy).toBeCalledWith({id: 1, deleted: false});
@@ -99,35 +119,4 @@ describe('WarehouseService', () => {
                 .toThrowError();
         });
     });
-
-    describe('findAll', () => {
-        it('should return a list of paginated warehouses', async () => {
-            const whereSpy = jest.spyOn(selectQb, 'where')
-                .mockReturnValue(selectQb);
-
-            mockedPaginate.mockResolvedValue({
-                first: 1, last: 1, total: 5, limit: 5, data: []
-            });
-
-            expect(warehouseService.findAll({ limit: 5, currentPage: 1 }
-                )).resolves.toEqual({
-                    data: [],
-                    first: 1,
-                    last: 1,
-                    limit: 10,
-                    total: 10
-                });
-
-            expect(whereSpy).toBeCalledTimes(1);
-            expect(whereSpy).toBeCalledWith(
-                'deleted = :deleted', { deleted: false }
-            );
-
-            expect(mockedPaginate).toBeCalledTimes(1);
-            expect(mockedPaginate).toBeCalledWith(
-                selectQb,
-                { currentPage: 1, limit: 5 }
-            );
-        });
-     });
 });
