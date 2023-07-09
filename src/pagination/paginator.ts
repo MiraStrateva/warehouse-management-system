@@ -46,8 +46,10 @@ export async function paginate<T, K>(
     options: PaginateOptions = { limit: 10, currentPage: 1, total: true }
 ) : Promise<K> {
     const offset = (options.currentPage - 1) * options.limit;
-    const data = await qb.limit(options.limit)
-    .offset(offset).getMany();
+    const data = await qb
+                .limit(options.limit)
+                .offset(offset)
+                .getMany();
 
     return new classRef({
         first: offset + 1,

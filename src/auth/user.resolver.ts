@@ -23,6 +23,8 @@ export class UserResolver {
     public async register(
         @Args('input') input: UserInput
     ) : Promise<User> {
-        return this.userService.create(input);
+        const user = await this.userService.create(input);
+
+        return new User(user);
     }
 }

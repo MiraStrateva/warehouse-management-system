@@ -1,5 +1,9 @@
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
-import { Inventory, InventoryMovements, InventoryMovementsHistory } from "./models/inventory-movements.types";
+import { 
+    Inventory, 
+    InventoryMovements, 
+    InventoryMovementsHistory, 
+    PaginatedInventoryMovements} from "./models/inventory-movements.types";
 import { BadRequestException, Logger, UseGuards } from "@nestjs/common";
 import { InventoryMovementService } from './inventory-movement.service';
 import { ImportExportInput } from './models/import-export.input';
@@ -8,6 +12,8 @@ import { WarehouseService } from '../warehouses/warehouse.service';
 import { AuthGuardJwtGql } from '../auth/auth-guard-jwt.gql';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { UserEntity } from 'src/auth/user.entity';
+import { CalculatorService } from './calculator.service';
+import { PaginateOptionsInput } from 'src/pagination/models/paginate-options.input';
 
 @Resolver(() => InventoryMovements)
 export class InvnentoryMovementResolver{
@@ -17,12 +23,16 @@ export class InvnentoryMovementResolver{
     constructor (
         private readonly inventoryMovementService: InventoryMovementService,
         private readonly productService: ProductService,
-        private readonly warehouseService: WarehouseService
+        private readonly warehouseService: WarehouseService, 
+        private readonly calculatorService: CalculatorService
     ) {}
 
-    @Query(() => [InventoryMovements])    
-    public async inventoryMovements(): Promise<InventoryMovements[]>{
-        return await this.inventoryMovementService.findAll();
+    @Query(() => PaginatedInventoryMovements)    
+    public async inventoryMovements(
+        @Args('input', { type: () => PaginateOptionsInput })
+        input: PaginateOptionsInput
+    ): Promise<PaginatedInventoryMovements>{
+        return await this.inventoryMovementService.findAll(input);
     }
 
     @Query(() => [InventoryMovementsHistory])    
@@ -37,9 +47,11 @@ export class InvnentoryMovementResolver{
         const dateFromParsed = dateFrom ? new Date(dateFrom) : new Date(0);
         const dateToParsed = dateTo ? new Date(dateTo) : new Date();
 
-        this.logger.debug(`dateFrom: ${dateFromParsed}, dateTo: ${dateToParsed}, warehouseId: ${warehouseId}`);
+        this.logger.log(
+            `Requiring Inventory Movements History from date: ${dateFromParsed} to date: ${dateToParsed} for warehouse: ${warehouseId}`);
 
-        return await this.inventoryMovementService.getHistoryReport(dateFromParsed, dateToParsed, warehouseId);
+        return await this.inventoryMovementService
+            .getHistoryReport(dateFromParsed, dateToParsed, warehouseId);
     }
 
     @Mutation(() => InventoryMovements, { name: 'import' })
@@ -50,6 +62,8 @@ export class InvnentoryMovementResolver{
         @CurrentUser() user: UserEntity
         ): Promise<InventoryMovements>{
         
+        this.logger.log(`Importing ${input.amount} products with id: ${input.productId} to warehouse: ${input.warehouseId}`);
+
         // Check if import is possible
         // 1. hazardous products are not kept in the same warehouse as non-hazardous products
         var product = await this.productService.findOne(input.productId);
@@ -74,7 +88,7 @@ export class InvnentoryMovementResolver{
             this.logger.debug(currentWarehouseStock);
 
             if (input.amount > (warehouseInventory[0].capacity - currentWarehouseStock)){
-                throw new BadRequestException(
+                throw new Error(
                     "There is not enough space in the warehouse to import this amount of products");
             }
         }
@@ -90,17 +104,18 @@ export class InvnentoryMovementResolver{
         @CurrentUser() user: UserEntity
     ): Promise<InventoryMovements>{
         
+        this.logger.log(`Exporting ${input.amount} products with id: ${input.productId} from warehouse: ${input.warehouseId}`);
+        
         // Check if export is possible
         // 1. warehouse has enough stock
         var productAvailability = await this.inventoryMovementService
             .getProductAvailability(input.date, input.productId, input.warehouseId);
 
-        this.logger.debug(productAvailability);
         let sum = 0;
         productAvailability.forEach(number => {
             sum += number.availability;
         });
-        this.logger.debug(sum);
+       
         if (input.amount > sum){
             throw new Error(
                 "There is not enough stock in the warehouse to export this amount of products");
@@ -118,10 +133,10 @@ export class InvnentoryMovementResolver{
     ): Promise<Inventory[]>{
         const dateParsed = date ? new Date(date) : new Date();
 
+        this.logger.log(`Calculating inventory for date: ${dateParsed}, warehouseId: ${warehouseId}`);
+
         const inventoryStock = await this.inventoryMovementService.getWarehouseInventory(
             dateParsed, warehouseId);
-
-        this.logger.debug(inventoryStock);
 
         if (inventoryStock.length === 0){
             var warehouse = await this.warehouseService.findOne(warehouseId);
@@ -136,11 +151,12 @@ export class InvnentoryMovementResolver{
             currentWarehouseStock += product.currentStock;
         });
 
-        this.logger.debug(currentWarehouseStock);
+        const remainingCapacity = await this.calculatorService.calculate(
+            `${inventoryStock[0].capacity}-${currentWarehouseStock}`);
 
         return [new Inventory({
                 capacity: inventoryStock[0].capacity,
                 currentStock: currentWarehouseStock,
-                remainingCapacity: inventoryStock[0].capacity - currentWarehouseStock})];
+                remainingCapacity: remainingCapacity})];
     }
 }

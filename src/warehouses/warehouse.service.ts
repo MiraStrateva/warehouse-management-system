@@ -25,7 +25,6 @@ export class WarehouseService {
 
     async findOne(id: number): Promise<WarehouseEntity | undefined> {
         const warehosue = await this.warehouseRepository.findOneBy({id: id, deleted: false});
-        this.logger.log(warehosue);
         if (!warehosue) {
             throw new NotFoundException();
         }

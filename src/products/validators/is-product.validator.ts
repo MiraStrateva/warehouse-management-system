@@ -1,5 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { registerDecorator, ValidationOptions, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
+import { registerDecorator, 
+         ValidationOptions, 
+         ValidationArguments, 
+         ValidatorConstraint, 
+         ValidatorConstraintInterface } from 'class-validator';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProductEntity } from '../product.entity';
 import { Repository } from 'typeorm';
@@ -16,16 +20,14 @@ export class IsProductValidator implements ValidatorConstraintInterface {
 
   async validate(id: number): Promise<boolean> {
     
-    this.logger.debug(`Validating product with ID: ${id}`);
+    this.logger.log(`Validating product with Id: ${id}`);
 
     const product = await this.productsRepository.findOneBy({id: id, deleted: false});
-
-    this.logger.debug(product);
     return !!product;
   }
 
   defaultMessage(validationArguments: ValidationArguments): string {
-    return `The product with ID '${validationArguments.value}' does not exist in the table`;
+    return `The product with Id '${validationArguments.value}' does not exist in the table`;
   }
 }
 

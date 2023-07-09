@@ -1,4 +1,7 @@
-import { ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface, registerDecorator } from "class-validator";
+import { ValidationArguments, 
+         ValidatorConstraint, 
+         ValidatorConstraintInterface, 
+         registerDecorator } from "class-validator";
 import { Repository } from "typeorm";
 import { UserEntity } from "../user.entity";
 import { InjectRepository } from "@nestjs/typeorm";
