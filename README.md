@@ -26,6 +26,7 @@ This project is a small stock management application built as part of an intervi
 - Historic Operations: Retrieve a historical list of imports and exports based on specific period and/or warehouses.
 - User Management: Manage the users of the system by registering users.
 - Authorization: The API is protected by a JWT token. The token can be obtained by calling the login mutation. The token is valid for 1 hour. The token is required to perform import/export operations.
+- Partially implemented tests: The project includes some unit tests for the warehouse service and repository. 
 
 ## Installation
 
@@ -54,12 +55,6 @@ $ npm run start:dev
 ```bash
 # unit tests
 $ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
 ```
 
 ## Authors
