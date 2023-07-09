@@ -2,6 +2,7 @@ import { Field, ObjectType, registerEnumType } from "@nestjs/graphql";
 import { Product } from "../../products/models/product.types";
 import { Warehouse } from "../../warehouses/models/warehouse.types";
 import { User } from "../../auth/models/user.types";
+import { Paginated } from '../../pagination/paginator';
 
 export enum Direction {
     Import = 'import',
@@ -31,6 +32,9 @@ export class InventoryMovements{
     @Field(() => User, { nullable: false })
     user: User;
 }
+
+@ObjectType()
+export class PaginatedInventoryMovements extends Paginated<InventoryMovements>(InventoryMovements) {}
 
 @ObjectType()
 export class InventoryMovementsHistory{

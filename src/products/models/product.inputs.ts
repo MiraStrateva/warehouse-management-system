@@ -1,6 +1,5 @@
 import { Field, Int, InputType, OmitType, PartialType } from '@nestjs/graphql';
 import { IsNotEmpty, Length, Max, MaxLength, MinLength } from 'class-validator';
-import { IsProduct } from '../validators/is-product.validator';
 
 @InputType()
 export class ProductCreateInput {
@@ -34,12 +33,5 @@ export class ProductCreateInput {
 @InputType()
 export class ProductEditInput extends PartialType( 
     OmitType(ProductCreateInput, ['name'])
-) {
-    @Field(() => Int, {
-        nullable: false,
-        description: "Product's id to edit",
-    })
-    @IsProduct()
-    id: number;
-}
+) {}
 

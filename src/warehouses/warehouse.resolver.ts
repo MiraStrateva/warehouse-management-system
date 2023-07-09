@@ -38,16 +38,16 @@ export class WarehouseResolver{
         @Args('warehouseId', { type: () => Number, nullable: true })
         warehouseId?: number
     ): Promise<WarehouseInventory[]>{
-        this.logger.debug(`warehouseInventory`);
         const dateParsed = date ? new Date(date) : new Date();
-
+        this.logger.log(`Getting warehouse inventory report for ${dateParsed.toISOString()} and warehouse ${warehouseId}`);
+        
         return await this.warehouseService.getInventoryReport(dateParsed, warehouseId);
     }
  
     @Mutation(() => Warehouse, { name: 'createWarehouse' })
     public async create(
-        @Args('input', {type: () => WarehouseCreateInput}
-        ) input: WarehouseCreateInput
+        @Args('input', {type: () => WarehouseCreateInput}) 
+        input: WarehouseCreateInput
     ): Promise<Warehouse>{
         return await this.warehouseService.create(input);
     }

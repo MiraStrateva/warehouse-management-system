@@ -17,6 +17,7 @@ export class AuthService{
 
     public getTokenForUser(user: UserEntity): string {
         this.logger.log(`Generating token for user ${user.username}`);
+        
         return this.jwtService.sign({
             username: user.username,
             sub: user.id
@@ -31,12 +32,12 @@ export class AuthService{
         });
 
         if(!user){
-            this.logger.debug(`User ${username} not found!`);
+            this.logger.log(`User ${username} not found!`);
             throw new UnauthorizedException();
         }
 
         if(!(await bcrypt.compare(password, user.password))){
-            this.logger.debug(`Invalid credentials for user ${username}`);
+            this.logger.log(`Invalid credentials for user ${username}`);
             throw new UnauthorizedException();
         }
 

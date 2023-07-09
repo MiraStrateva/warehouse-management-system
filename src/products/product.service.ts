@@ -24,7 +24,6 @@ export class ProductService {
     }
 
     async findOne(id: number): Promise<ProductEntity | undefined> {
-        this.logger.debug(`findOne: ${id}`);
         const product = await this.productsRepository.findOneBy({id: id, deleted: false});
         if (!product) {
             throw new NotFoundException();

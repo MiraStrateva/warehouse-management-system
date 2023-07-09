@@ -1,5 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { registerDecorator, ValidationOptions, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
+import { registerDecorator, 
+         ValidationOptions, 
+         ValidationArguments, 
+         ValidatorConstraint, 
+         ValidatorConstraintInterface } from 'class-validator';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { WarehouseEntity } from '../warehouse.entity';
@@ -14,18 +18,15 @@ export class IsWarehouseValidator implements ValidatorConstraintInterface {
     private readonly warehouseRepository: Repository<WarehouseEntity>
   ) {}
 
-  async validate(id: number): Promise<boolean> {
-    
-    this.logger.debug(`Validating warehouse with ID: ${id}`);
+  async validate(id: number): Promise<boolean> {    
+    this.logger.log(`Validating warehouse with Id: ${id}`);
 
     const warehouse = await this.warehouseRepository.findOneBy({id: id, deleted: false});
-
-    this.logger.debug(warehouse);
     return !!warehouse;
   }
 
   defaultMessage(validationArguments: ValidationArguments): string {
-    return `The warehouse with ID '${validationArguments.value}' does not exist in the table`;
+    return `The warehouse with Id '${validationArguments.value}' does not exist in the table`;
   }
 }
 
