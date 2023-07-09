@@ -37,7 +37,7 @@ export class WarehouseService {
     }
 
     async update(id: number, input: WarehouseEntity): Promise<WarehouseEntity> {
-        if (await this.findOne(id)) {        
+        if (await this.findOne(id)) {
             await this.warehouseRepository.update(id, input);
             return await this.findOne(id);
         }

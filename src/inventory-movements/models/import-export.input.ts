@@ -1,7 +1,7 @@
 import { Field, Float, InputType } from "@nestjs/graphql";
 import { IsProduct } from '../../products/validators/is-product.validator';
 import { IsNotEmpty } from "class-validator";
-import { IsWarehouse } from "src/warehouses/validators/is-warehouse.validator";
+import { IsWarehouse } from "../../warehouses/validators/is-warehouse.validator";
 
 @InputType()
 export class ImportExportInput {

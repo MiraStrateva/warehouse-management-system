@@ -11,9 +11,9 @@ import { ProductService } from '../products/product.service';
 import { WarehouseService } from '../warehouses/warehouse.service';
 import { AuthGuardJwtGql } from '../auth/auth-guard-jwt.gql';
 import { CurrentUser } from '../auth/current-user.decorator';
-import { UserEntity } from 'src/auth/user.entity';
+import { UserEntity } from '../auth/user.entity';
 import { CalculatorService } from './calculator.service';
-import { PaginateOptionsInput } from 'src/pagination/models/paginate-options.input';
+import { PaginateOptionsInput } from '../pagination/models/paginate-options.input';
 
 @Resolver(() => InventoryMovements)
 export class InvnentoryMovementResolver{

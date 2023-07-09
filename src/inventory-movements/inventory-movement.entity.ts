@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "t
 import { ProductEntity } from '../products/product.entity';
 import { Direction } from "./models/inventory-movements.types";
 import { WarehouseEntity } from '../warehouses/warehouse.entity';
-import { UserEntity } from "src/auth/user.entity";
+import { UserEntity } from "../auth/user.entity";
 
 @Entity({ name: 'inventory_movements' })
 export class InventoryMovementsEntity {

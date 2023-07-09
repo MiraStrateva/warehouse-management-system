@@ -3,7 +3,7 @@ import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ProductEntity } from '../products/product.entity';
 import { WarehouseEntity } from '../warehouses/warehouse.entity';
 import { InventoryMovementsEntity } from '../inventory-movements/inventory-movement.entity';
-import { UserEntity } from 'src/auth/user.entity';
+import { UserEntity } from '../auth/user.entity';
 
 export default registerAs(
   'orm.config',
