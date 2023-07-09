@@ -4,7 +4,7 @@ import { LessThanOrEqual, Repository } from "typeorm";
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { Direction, 
          InventoryMovements, 
-         InventoryMovementsHistory, 
+         InventoryMovementsHistoryReport, 
          InventoryStock, 
          PaginatedInventoryMovements, 
          ProductAvailability } from "./models/inventory-movements.types";
@@ -47,7 +47,7 @@ export class InventoryMovementService {
             .save(new InventoryMovementsEntity({
                 ...input,
                 user: user,
-                direction: Direction.Import,
+                direction: Direction.IMPORT,
             }));
 
         return this.findOne(imported.id);
@@ -58,7 +58,7 @@ export class InventoryMovementService {
             .save(new InventoryMovementsEntity({
                 ...input,
                 user: user,
-                direction: Direction.Export,
+                direction: Direction.EXPORT,
             }));
 
         return this.findOne(exported.id);
@@ -68,7 +68,7 @@ export class InventoryMovementService {
         fromDate: Date,
         toDate: Date, 
         warehouseId?: number
-        ): Promise<InventoryMovementsHistory[]> {
+        ): Promise<InventoryMovementsHistoryReport[]> {
 
         this.logger.log(`History report from: ${fromDate} to: ${toDate}, warehouse: ${warehouseId}`);
 
@@ -91,7 +91,7 @@ export class InventoryMovementService {
                 amount: movement.amount,
                 size: movement.product.size,
                 warehouseName: movement.warehouse.name,
-                total: movement.direction === 'import' ?
+                total: movement.direction === Direction.IMPORT ?
                      movement.amount*movement.product.size :
                      -movement.amount*movement.product.size,
                 userName: movement.user.username}});
@@ -129,7 +129,7 @@ export class InventoryMovementService {
         return warehouseInventory.map((movement) => {
             return {
             capacity: movement.warehouse.capacity,
-            currentStock: movement.direction === Direction.Import 
+            currentStock: movement.direction === Direction.IMPORT 
                         ? movement.amount*movement.product.size 
                         : -movement.amount*movement.product.size}});
     }
@@ -149,7 +149,7 @@ export class InventoryMovementService {
         
         return warehouseInventory.map((movement) => {
             return {
-            availability: movement.direction === 'import' 
+            availability: movement.direction === Direction.IMPORT
                         ? movement.amount 
                         : -movement.amount}});        
     }

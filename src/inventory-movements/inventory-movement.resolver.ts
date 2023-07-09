@@ -2,9 +2,9 @@ import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { 
     Inventory, 
     InventoryMovements, 
-    InventoryMovementsHistory, 
-    PaginatedInventoryMovements} from "./models/inventory-movements.types";
-import { BadRequestException, Logger, UseGuards } from "@nestjs/common";
+    PaginatedInventoryMovements,
+    InventoryMovementsHistoryReport} from "./models/inventory-movements.types";
+import { Logger, UseGuards } from "@nestjs/common";
 import { InventoryMovementService } from './inventory-movement.service';
 import { ImportExportInput } from './models/import-export.input';
 import { ProductService } from '../products/product.service';
@@ -27,7 +27,7 @@ export class InvnentoryMovementResolver{
         private readonly calculatorService: CalculatorService
     ) {}
 
-    @Query(() => PaginatedInventoryMovements)    
+    @Query(() => PaginatedInventoryMovements, { name: 'inventoryMovementsList' })    
     public async inventoryMovements(
         @Args('input', { type: () => PaginateOptionsInput })
         input: PaginateOptionsInput
@@ -35,15 +35,15 @@ export class InvnentoryMovementResolver{
         return await this.inventoryMovementService.findAll(input);
     }
 
-    @Query(() => [InventoryMovementsHistory])    
-    public async inventoryMovementsHistory(
+    @Query(() => [InventoryMovementsHistoryReport])    
+    public async inventoryMovementsHistoryReport(
         @Args('dateFrom', { type: () => Date, nullable: true })
         dateFrom: Date,
         @Args('dateTo', { type: () => Date, nullable: true })
         dateTo: Date,
         @Args('warehouseId', { type: () => Number, nullable: true })
         warehouseId?: number
-    ): Promise<InventoryMovementsHistory[]>{
+    ): Promise<InventoryMovementsHistoryReport[]>{
         const dateFromParsed = dateFrom ? new Date(dateFrom) : new Date(0);
         const dateToParsed = dateTo ? new Date(dateTo) : new Date();
 
@@ -124,11 +124,11 @@ export class InvnentoryMovementResolver{
         return await this.inventoryMovementService.export(input, user);
     }
 
-    @Query(() => [Inventory])
-    public async inventory(
+    @Query(() => [Inventory], { name: 'warehouseInventoryReport' })
+    public async warehouseInventory(
         @Args('date', { type: () => Date, nullable: true })
         date: Date,
-        @Args('warehouseId', { type: () => Number })
+        @Args('warehouseId', { type: () => Number, nullable: false })
         warehouseId: number
     ): Promise<Inventory[]>{
         const dateParsed = date ? new Date(date) : new Date();

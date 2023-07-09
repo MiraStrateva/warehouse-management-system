@@ -25,6 +25,7 @@ export class ProductCreateInput {
 
     @Field(() => Boolean, {
         nullable: false,
+        defaultValue: false,
         description: "User's hazardous to the product",
     })
     hazardous: boolean;
@@ -32,6 +33,6 @@ export class ProductCreateInput {
 
 @InputType()
 export class ProductEditInput extends PartialType( 
-    OmitType(ProductCreateInput, ['name'])
+    OmitType(ProductCreateInput, ['size'])
 ) {}
 

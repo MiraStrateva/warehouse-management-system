@@ -32,5 +32,6 @@ export class ImportExportInput {
         nullable: false,
         description: "Imported/Exported amount",
     })
+    @IsNotEmpty()
     amount: number;
 }

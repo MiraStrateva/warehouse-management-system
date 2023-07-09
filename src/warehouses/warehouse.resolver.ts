@@ -15,7 +15,7 @@ export class WarehouseResolver{
         private readonly warehouseService: WarehouseService
     ) {}
 
-    @Query(() => PaginatedWarehouses)    
+    @Query(() => PaginatedWarehouses, { name: 'warehousesList', nullable: true })    
     public async warehousesPaginated(
         @Args('input', { type: () => PaginateOptionsInput })
         input: PaginateOptionsInput
@@ -23,7 +23,7 @@ export class WarehouseResolver{
         return await this.warehouseService.findAll(input);
     }
 
-    @Query(() => Warehouse)       
+    @Query(() => Warehouse, { name: 'warehouseInfo', nullable: true })       
     public async warehouse(
         @Args('id', {type: () => Int})
         id: number
@@ -31,7 +31,7 @@ export class WarehouseResolver{
         return await this.warehouseService.findOne(id);
     }
 
-    @Query(() => [WarehouseInventory])
+    @Query(() => [WarehouseInventory], { name: 'warehouseInventoryReport', nullable: true })
     public async warehouseInventory(
         @Args('date', { type: () => Date, nullable: true })
         date: Date,
