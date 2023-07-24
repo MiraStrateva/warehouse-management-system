@@ -59,8 +59,7 @@ export class WarehouseResolver{
         @Args('input', { type: () => WarehouseEditInput })
         input: WarehouseEditInput        
     ): Promise<Warehouse>{
-        const product = await this.warehouseService.findOne(id);
-        return await this.warehouseService .update(id, Object.assign(product, input));
+        return await this.warehouseService .update(id, input);
     }
 
     @Mutation(() => EntityWithId, { name: 'deleteWarehouse' })
@@ -68,12 +67,6 @@ export class WarehouseResolver{
         @Args('id', {type: () => Int})
         id: number
     ): Promise<EntityWithId>{
-        // Delete only if there are no products in the warehouse
-        const inventory = await this.warehouseService.getInventoryReport(new Date(), id);
-        if(inventory.length > 0 && inventory[0].currentStock > 0){
-            throw new Error(`Can't delete warehouse with products in it`);
-        }
-
         await this.warehouseService.delete(id);
         return new EntityWithId(id);
     }

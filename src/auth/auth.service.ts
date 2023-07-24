@@ -1,8 +1,8 @@
 import { Injectable, Logger, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { UserEntity } from "./user.entity";
 import { Repository } from "typeorm";
 import { JwtService } from "@nestjs/jwt";
+import { UserEntity } from '../users/user.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -42,9 +42,5 @@ export class AuthService{
         }
 
         return user;
-    }
-
-    public async hashPassword(password: string): Promise<string>{
-        return await bcrypt.hash(password, 10);
     }
 }

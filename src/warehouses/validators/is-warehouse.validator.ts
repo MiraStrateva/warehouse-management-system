@@ -21,7 +21,7 @@ export class IsWarehouseValidator implements ValidatorConstraintInterface {
   async validate(id: number): Promise<boolean> {    
     this.logger.log(`Validating warehouse with Id: ${id}`);
 
-    const warehouse = await this.warehouseRepository.findOneBy({id: id, deleted: false});
+    const warehouse = await this.warehouseRepository.findOneBy({id: id});
     return !!warehouse;
   }
 

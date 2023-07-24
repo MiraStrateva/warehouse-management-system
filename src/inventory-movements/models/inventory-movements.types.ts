@@ -1,7 +1,7 @@
 import { Field, ObjectType, registerEnumType } from "@nestjs/graphql";
 import { Product } from "../../products/models/product.types";
 import { Warehouse } from "../../warehouses/models/warehouse.types";
-import { User } from "../../auth/models/user.types";
+import { User } from "../../users/models/user.types";
 import { Paginated } from '../../pagination/paginator';
 
 export enum Direction {

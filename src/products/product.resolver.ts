@@ -46,8 +46,7 @@ export class ProductResolver{
         @Args('input', { type: () => ProductEditInput })
         input: ProductEditInput        
     ): Promise<Product>{
-        const product = await this.productService.findOne(id);
-        return await this.productService.update(id, Object.assign(product, input));
+        return await this.productService.update(id, input);
     }
 
     @Mutation(() => EntityWithId, { name: 'deleteProduct' }) 

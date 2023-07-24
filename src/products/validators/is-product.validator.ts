@@ -22,7 +22,7 @@ export class IsProductValidator implements ValidatorConstraintInterface {
     
     this.logger.log(`Validating product with Id: ${id}`);
 
-    const product = await this.productsRepository.findOneBy({id: id, deleted: false});
+    const product = await this.productsRepository.findOneBy({id: id});
     return !!product;
   }
 
