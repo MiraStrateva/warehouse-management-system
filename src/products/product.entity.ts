@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { InventoryMovementsEntity } from '../inventory-movements/inventory-movement.entity';
 
 @Entity({ name: 'product' })
@@ -22,9 +22,11 @@ export class ProductEntity {
     @Column({default: false})
     hazardous: boolean;
 
-    @Column({default: false})
-    deleted: boolean;
+    @Column({ nullable: true })
+    @DeleteDateColumn()
+    deletedAt?: Date;
 
     @OneToMany(() => InventoryMovementsEntity, (inventoryMovements) => inventoryMovements.product)
     inventoryMovements: InventoryMovementsEntity[]
 }
+

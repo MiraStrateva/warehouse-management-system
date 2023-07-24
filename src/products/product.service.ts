@@ -16,15 +16,14 @@ export class ProductService {
 
     async findAll(input: PaginateOptions): Promise<PaginatedProducts> {
         return await paginate<ProductEntity, PaginatedProducts>(
-            this.productsRepository.createQueryBuilder()
-                .where("deleted = :deleted", { deleted: false }),
+            this.productsRepository.createQueryBuilder(),
             PaginatedProducts,
             input
         );
     }
 
     async findOne(id: number): Promise<ProductEntity | undefined> {
-        const product = await this.productsRepository.findOneBy({id: id, deleted: false});
+        const product = await this.productsRepository.findOneBy({id: id}); 
         if (!product) {
             throw new NotFoundException();
         }
@@ -37,15 +36,11 @@ export class ProductService {
     }
 
     async update(id: number, input: ProductEditInput): Promise<ProductEntity> {
-        if (await this.findOne(id)) {        
-            await this.productsRepository.update(id, input);
-            return await this.findOne(id);
-        }
+        const product = await this.findOne(id);
+        return this.productsRepository.save(Object.assign(product, input));
     }
 
     async delete(id: number): Promise<void> {
-        const product = await this.findOne(id);
-        product.deleted = true;
-        await this.productsRepository.update(id, product);
+        await this.productsRepository.softDelete(id);
     }
 }

@@ -7,12 +7,9 @@ import {
 import { Logger, UseGuards } from "@nestjs/common";
 import { InventoryMovementService } from './inventory-movement.service';
 import { ImportExportInput } from './models/import-export.input';
-import { ProductService } from '../products/product.service';
-import { WarehouseService } from '../warehouses/warehouse.service';
 import { AuthGuardJwtGql } from '../auth/auth-guard-jwt.gql';
-import { CurrentUser } from '../auth/current-user.decorator';
-import { UserEntity } from '../auth/user.entity';
-import { CalculatorService } from './calculator.service';
+import { CurrentUser } from '../users/current-user.decorator';
+import { UserEntity } from '../users/user.entity';
 import { PaginateOptionsInput } from '../pagination/models/paginate-options.input';
 
 @Resolver(() => InventoryMovements)
@@ -21,10 +18,7 @@ export class InvnentoryMovementResolver{
     private readonly logger = new Logger(InvnentoryMovementResolver.name);
 
     constructor (
-        private readonly inventoryMovementService: InventoryMovementService,
-        private readonly productService: ProductService,
-        private readonly warehouseService: WarehouseService, 
-        private readonly calculatorService: CalculatorService
+        private readonly inventoryMovementService: InventoryMovementService
     ) {}
 
     @Query(() => PaginatedInventoryMovements, { name: 'inventoryMovementsList' })    
@@ -64,35 +58,6 @@ export class InvnentoryMovementResolver{
         
         this.logger.log(`Importing ${input.amount} products with id: ${input.productId} to warehouse: ${input.warehouseId}`);
 
-        // Check if import is possible
-        // 1. hazardous products are not kept in the same warehouse as non-hazardous products
-        var product = await this.productService.findOne(input.productId);
-        if (!await this.inventoryMovementService
-                .checkForImportPossibility(product.hazardous, input.warehouseId)){
-            throw new Error(
-                "Hazardous products are not kept in the same warehouse as non-hazardous products");
-        }
-
-        // 2. warehouse capacity is not exceeded
-        var warehouseInventory = await this.inventoryMovementService
-            .getWarehouseInventory(input.date, input.warehouseId);
-
-        this.logger.debug(warehouseInventory);
-
-        if (warehouseInventory.length > 0){
-            let currentWarehouseStock = 0;
-            warehouseInventory.forEach(product => {
-                currentWarehouseStock += product.currentStock;
-            });
-
-            this.logger.debug(currentWarehouseStock);
-
-            if (input.amount > (warehouseInventory[0].capacity - currentWarehouseStock)){
-                throw new Error(
-                    "There is not enough space in the warehouse to import this amount of products");
-            }
-        }
-
         return await this.inventoryMovementService.import(input, user);
     }
 
@@ -106,21 +71,6 @@ export class InvnentoryMovementResolver{
         
         this.logger.log(`Exporting ${input.amount} products with id: ${input.productId} from warehouse: ${input.warehouseId}`);
         
-        // Check if export is possible
-        // 1. warehouse has enough stock
-        var productAvailability = await this.inventoryMovementService
-            .getProductAvailability(input.date, input.productId, input.warehouseId);
-
-        let sum = 0;
-        productAvailability.forEach(number => {
-            sum += number.availability;
-        });
-       
-        if (input.amount > sum){
-            throw new Error(
-                "There is not enough stock in the warehouse to export this amount of products");
-        }
-
         return await this.inventoryMovementService.export(input, user);
     }
 
@@ -135,28 +85,6 @@ export class InvnentoryMovementResolver{
 
         this.logger.log(`Calculating inventory for date: ${dateParsed}, warehouseId: ${warehouseId}`);
 
-        const inventoryStock = await this.inventoryMovementService.getWarehouseInventory(
-            dateParsed, warehouseId);
-
-        if (inventoryStock.length === 0){
-            var warehouse = await this.warehouseService.findOne(warehouseId);
-            return [new Inventory({
-                capacity: warehouse.capacity, 
-                currentStock: 0, 
-                remainingCapacity: warehouse.capacity})];
-        }
-
-        let currentWarehouseStock = 0;
-        inventoryStock.forEach(product => {
-            currentWarehouseStock += product.currentStock;
-        });
-
-        const remainingCapacity = await this.calculatorService.calculate(
-            `${inventoryStock[0].capacity}-${currentWarehouseStock}`);
-
-        return [new Inventory({
-                capacity: inventoryStock[0].capacity,
-                currentStock: currentWarehouseStock,
-                remainingCapacity: remainingCapacity})];
+        return await this.inventoryMovementService.getWarehouseInventoryReport(dateParsed, warehouseId);
     }
 }

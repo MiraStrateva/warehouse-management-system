@@ -8,6 +8,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { WarehouseModule } from './warehouses/warehouse.module';
 import { InventoryMovementModule } from './inventory-movements/inventory-movement.module';
 import { AuthModule } from './auth/auth.module';
+import { UserModule } from './users/user.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -25,6 +26,7 @@ import { AuthModule } from './auth/auth.module';
     playground: true,
   }),
   AuthModule,
+  UserModule,
   ProductModule,
   WarehouseModule,
   InventoryMovementModule

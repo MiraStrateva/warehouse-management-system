@@ -12,7 +12,7 @@ export class CalculatorService {
     public async calculate(expr: string): Promise<number> {
         this.logger.log(`Calculating ${expr}`);
 
-        const url = `${process.env.CALC_API_URL || "http://api.mathjs.org/v4/"}?expr=${expr}`;
+        const url = `${process.env.CALC_API_URL}?expr=${expr}`;  
 
         const data = await firstValueFrom(this.httpService.get<number>(url).pipe(
                 catchError((error: AxiosError) => {

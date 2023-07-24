@@ -3,7 +3,7 @@ import { CurrentUser } from './current-user.decorator';
 import { UserService } from './user.service';
 import { UserInput } from './models/user.input';
 import { User } from './models/user.types';
-import { AuthGuardJwtGql } from './auth-guard-jwt.gql';
+import { AuthGuardJwtGql } from '../auth/auth-guard-jwt.gql';
 import { UseGuards } from '@nestjs/common';
 import { UserEntity } from './user.entity';
 
