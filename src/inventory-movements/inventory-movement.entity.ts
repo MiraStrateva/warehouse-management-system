@@ -1,8 +1,8 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { ProductEntity } from '../products/product.entity';
-import { Direction } from "./models/inventory-movements.types";
 import { WarehouseEntity } from '../warehouses/warehouse.entity';
 import { UserEntity } from "../users/user.entity";
+import { Direction } from "./models/direction.enum";
 
 @Entity({ name: 'inventory_movements' })
 export class InventoryMovementsEntity {

@@ -2,12 +2,7 @@ import { Type } from "@nestjs/common";
 import { Field, ObjectType } from "@nestjs/graphql";
 import { Expose } from "class-transformer";
 import { SelectQueryBuilder } from "typeorm";
-
-export interface PaginateOptions {
-    limit: number;
-    currentPage: number;
-    total?: boolean;
-}
+import { PaginateOptions } from "./models/paginate-options.input";
 
 export function Paginated<T>(classRef: Type<T>) {
     @ObjectType()

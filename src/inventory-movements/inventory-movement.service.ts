@@ -2,8 +2,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { InventoryMovementsEntity } from "./inventory-movement.entity";
 import { LessThanOrEqual, Repository } from "typeorm";
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
-import { Direction, 
-         Inventory, 
+import { Inventory, 
          InventoryMovements, 
          InventoryMovementsHistoryReport, 
          InventoryStock, 
@@ -11,10 +10,12 @@ import { Direction,
          ProductAvailability } from "./models/inventory-movements.types";
 import { ImportExportInput } from "./models/import-export.input";
 import { UserEntity } from "../users/user.entity";
-import { PaginateOptions, paginate } from "../pagination/paginator";
+import { paginate } from "../pagination/paginator";
 import { ProductService } from '../products/product.service';
 import { WarehouseService } from '../warehouses/warehouse.service';
 import { CalculatorService } from './calculator.service';
+import { Direction } from "./models/direction.enum";
+import { PaginateOptions } from '../pagination/models/paginate-options.input';
 
 @Injectable()
 export class InventoryMovementService {
