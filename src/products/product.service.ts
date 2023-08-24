@@ -2,9 +2,10 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { ProductEntity } from "./product.entity";
 import { Repository } from "typeorm";
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
-import { PaginateOptions, paginate } from "./../pagination/paginator";
+import { paginate } from "./../pagination/paginator";
 import { PaginatedProducts } from "./models/product.types";
 import { ProductCreateInput, ProductEditInput } from "./models/product.inputs";
+import { PaginateOptions } from '../pagination/models/paginate-options.input';
 
 @Injectable()
 export class ProductService {
