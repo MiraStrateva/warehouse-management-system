@@ -1,10 +1,11 @@
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Logger, NotFoundException } from "@nestjs/common";
-import { PaginateOptions, paginate } from "./../pagination/paginator";
+import { paginate } from "./../pagination/paginator";
 import { WarehouseEntity } from "./warehouse.entity";
 import { WarehouseInventory, PaginatedWarehouses } from './models/warehouse.types';
 import { WarehouseCreateInput, WarehouseEditInput } from "./models/warehouse.inputs";
+import { PaginateOptions } from '../pagination/models/paginate-options.input';
 
 export class WarehouseService {
     private readonly logger = new Logger(WarehouseService.name);
@@ -37,12 +38,13 @@ export class WarehouseService {
 
     async update(id: number, input: WarehouseEditInput): Promise<WarehouseEntity> {
         const warehouse = await this.findOne(id);
-        return this.warehouseRepository.save(Object.assign(warehouse, input));
+        return await this.warehouseRepository.save(Object.assign(warehouse, input));
     }
 
     async delete(id: number): Promise<void> {
         // Delete only if there are no products in the warehouse
         const inventory = await this.getInventoryReport(new Date(), id);
+        
         if(inventory.length > 0 && inventory[0].currentStock > 0){
             throw new Error(`Can't delete warehouse with products in it`);
         }

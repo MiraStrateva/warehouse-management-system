@@ -1,5 +1,10 @@
 import { Field, InputType, Int } from "@nestjs/graphql";
-import { PaginateOptions } from "../paginator";
+
+export interface PaginateOptions {
+    limit: number;
+    currentPage: number;
+    total?: boolean;
+}
 
 @InputType()
 export class PaginateOptionsInput implements PaginateOptions {

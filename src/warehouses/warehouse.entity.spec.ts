@@ -12,7 +12,7 @@ describe('WarehouseEntity', () => {
             description: 'WHRS-001 warehouse',
             id: undefined,
             capacity: undefined,
-            deleted: undefined,
+            deletedAt: undefined,
             inventoryMovements: undefined
         });
     });
