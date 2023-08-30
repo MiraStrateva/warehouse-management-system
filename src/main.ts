@@ -11,6 +11,8 @@ async function bootstrap() {
   
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
-  await app.listen(3000);
+  app.enableCors();
+
+  await app.listen(3010);
 }
 bootstrap();
